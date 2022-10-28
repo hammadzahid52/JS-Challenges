@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Type Ahead 👀</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <form class="search-form">
+      <input type="text" class="search" placeholder="City or State" />
+      <ul class="suggestions">
+        <li>Filter for a city</li>
+        <li>or a state</li>
+      </ul>
+    </form>
+    <script>
+      const endpoint =
+        "https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json";
+
+      const cities = [];
+
+      // fetch returns a promise;
+
+      //promises mean it comes in a while, soo to work with them  alws use .then() to get response
+      //but the return is messed up, so work against that use json fucntion and then
+      // use .then() to read it
+
+      // const promise=fetch(endpoint);
+      // console.log(promise);
+
+      //fetch(endpoint).then(blob=>blob.json()).then(data=>console.log(data))
+
+      //u can use let instead and have cities=data, or use cities.push()
+      fetch(endpoint)
+        .then((blob) => blob.json())
+        .then((data) => cities.push(...data));
+
+      //we spreaded each item useing ... into cites so all items al in 1 array, instead of nested arrays
+
+      function findMatcher(words, cities) {
+        return cities.filter((place) => {
+          const regex = new RegExp(words, "gi");
+          return place.city.match(regex) || place.state.match(regex);
+        });
+      }
+
+      function numberWithCommas(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      }
+
+      function displayResult() {
+        //console.log(this.value);
+        const match = findMatcher(this.value, cities);
+        //console.log(match);
+        const html = match
+          .map((place) => {
+            const regex = new RegExp(this.value, "gi");
+
+            const cityName = place.city.replace(
+              regex,
+              `<span class="hl">${this.value}</span>`
+            );
+            const stateName = place.state.replace(
+              regex,
+              `<span class="hl">${this.value}</span>`
+            );
+
+            return `
+            <li>
+            <span class="name">${cityName}, ${stateName}</span>  
+            <span class="population">${numberWithCommas(place.population)}</span>  
+            </li>
+          `;
+          })
+          .join("");
+        //returun as one big string
+
+        suggest.innerHTML = html;
+      }
+
+      const search = document.querySelector(".search");
+      const suggest = document.querySelector(".suggestions");
+
+      search.addEventListener("change", displayResult);
+      search.addEventListener("keyup", displayResult);
+    </script>
+  </body>
+</html>
